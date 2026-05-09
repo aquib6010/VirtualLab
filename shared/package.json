@@ -1,0 +1,7 @@
+{
+  "name": "virtual-lab-shared",
+  "version": "1.0.0",
+  "description": "Shared types and constants for VIRTUAL-LAB",
+  "main": "index.ts",
+  "types": "index.ts"
+}
