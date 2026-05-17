@@ -38,6 +38,7 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
     reset,
     step,
     setTimestep,
+    setGravity,
     serializeWorld,
     onFrame,
   } = usePhysicsEngine(containerRef, {
@@ -293,6 +294,7 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
           onReset={reset}
           onStep={step}
           onTimestepChange={setTimestep}
+          onGravityChange={setGravity}
         />
       </div>
 

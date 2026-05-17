@@ -1,8 +1,8 @@
 /**
- * CanvasControls — Simulation controls bar (play/pause/reset/step/timestep)
+ * CanvasControls — Simulation controls bar (play/pause/reset/step/timestep/gravity)
  * Positioned at the bottom of the canvas area.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useLabStore } from '@/stores/useLabStore';
 
 interface CanvasControlsProps {
@@ -11,6 +11,7 @@ interface CanvasControlsProps {
   onReset: () => void;
   onStep: () => void;
   onTimestepChange: (delta: number) => void;
+  onGravityChange?: (x: number, y: number) => void;
 }
 
 const CanvasControls: React.FC<CanvasControlsProps> = ({
@@ -19,8 +20,10 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
   onReset,
   onStep,
   onTimestepChange,
+  onGravityChange,
 }) => {
   const { isPlaying, setIsPlaying } = useLabStore();
+  const [gravityMode, setGravityMode] = useState<'earth' | 'zero' | 'moon'>('earth');
 
   const handlePlayPause = () => {
     if (isPlaying) {
@@ -37,6 +40,17 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
     setIsPlaying(false);
   };
 
+  const handleGravityChange = (mode: typeof gravityMode) => {
+    setGravityMode(mode);
+    const gravityMap = {
+      earth: { x: 0, y: 1 },
+      zero: { x: 0, y: 0 },
+      moon: { x: 0, y: 0.16 },
+    };
+    const g = gravityMap[mode];
+    onGravityChange?.(g.x, g.y);
+  };
+
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
       <div className="glass-card flex items-center gap-2 px-4 py-2 shadow-lg">
@@ -48,7 +62,7 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
           </svg>
         </button>
 
-        {/* Step back */}
+        {/* Step forward */}
         <button onClick={onStep} className="btn-icon" title="Step Forward">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="5,4 15,12 5,20"/>
@@ -101,6 +115,32 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
             <option value="2">2x</option>
             <option value="4">4x</option>
           </select>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-lab-border mx-1" />
+
+        {/* Gravity toggle */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-lab-muted uppercase tracking-wider font-semibold">Gravity</span>
+          {([
+            { mode: 'zero' as const, label: '0g', title: 'Zero gravity — horizontal motion only' },
+            { mode: 'moon' as const, label: '🌙', title: 'Moon gravity (0.16g)' },
+            { mode: 'earth' as const, label: '🌍', title: 'Earth gravity (1g)' },
+          ]).map(({ mode, label, title }) => (
+            <button
+              key={mode}
+              onClick={() => handleGravityChange(mode)}
+              title={title}
+              className={`px-2 py-1 rounded text-xs font-semibold transition-all ${
+                gravityMode === mode
+                  ? 'bg-lab-accent/20 text-lab-accent border border-lab-accent/30'
+                  : 'bg-lab-surface text-lab-muted border border-lab-border hover:text-lab-text'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
