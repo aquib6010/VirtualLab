@@ -111,10 +111,12 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
 
       // Use the container's rect for consistent coordinates
       const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      // Snap to 25px grid for easy alignment
+      const GRID = 25;
+      const x = Math.round((e.clientX - rect.left) / GRID) * GRID;
+      const y = Math.round((e.clientY - rect.top) / GRID) * GRID;
 
-      console.log(`[Canvas] Click at (${Math.round(x)}, ${Math.round(y)}) tool=${activeTool}`);
+      console.log(`[Canvas] Click at (${x}, ${y}) tool=${activeTool}`);
 
       const bodyTools: BodyType[] = ['rectangle', 'circle', 'trapezoid'];
       const constraintTools: ConstraintType[] = ['spring', 'rope', 'pivot', 'motor'];
@@ -162,6 +164,15 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
           if (selectedBodyId === clickedBodyId) {
             setSelectedBodyId(null);
           }
+        }
+      } else if (activeTool === 'select') {
+        // Click to select a body and load its properties
+        const clickedBodyId = findBodyAtPoint(x, y);
+        if (clickedBodyId) {
+          setSelectedBodyId(clickedBodyId);
+          setTrackedBodyId(clickedBodyId);
+        } else {
+          setSelectedBodyId(null);
         }
       }
     },
@@ -234,10 +245,10 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
           style={{ width, height }}
         />
 
-        {/* Click capture layer — z-20, above canvas. Only passes through in select mode */}
+        {/* Click capture layer — z-20, captures clicks in all modes */}
         <div
-          className={`absolute inset-0 z-20 ${activeTool === 'select' ? 'pointer-events-none' : ''}`}
-          style={{ width, height, cursor: activeTool === 'select' ? 'default' : activeTool === 'delete' ? 'not-allowed' : 'crosshair' }}
+          className="absolute inset-0 z-20"
+          style={{ width, height, cursor: activeTool === 'select' ? 'pointer' : activeTool === 'delete' ? 'not-allowed' : 'crosshair' }}
           onClick={handleCanvasClick}
         />
 

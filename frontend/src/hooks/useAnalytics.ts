@@ -64,6 +64,7 @@ export function useAnalytics(
         speed: data.speed,
         kineticEnergy,
         angularVelocity: data.angularVelocity,
+        mass: data.mass,
       };
 
       bufferRef.current.push(frame);

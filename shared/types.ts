@@ -89,6 +89,7 @@ export interface AnalyticsFrame {
   speed: number;
   kineticEnergy: number;
   angularVelocity: number;
+  mass: number;
 }
 
 // ─── Experiment ─────────────────────────────────────────────────────

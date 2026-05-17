@@ -15,6 +15,7 @@ import {
   Area,
 } from 'recharts';
 import type { AnalyticsFrame } from '@shared/types';
+import { pxToMs, pxToMs2, keToSI } from '@/utils/units';
 
 interface AnalyticsPanelProps {
   frames: AnalyticsFrame[];
@@ -49,12 +50,12 @@ const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({
   // Prepare chart data
   const chartData = frames.slice(-100).map((f, i) => ({
     t: i,
-    vx: parseFloat(f.velocity.x.toFixed(2)),
-    vy: parseFloat(f.velocity.y.toFixed(2)),
-    speed: parseFloat(f.speed.toFixed(2)),
-    ax: parseFloat(f.acceleration.x.toFixed(2)),
-    ay: parseFloat(f.acceleration.y.toFixed(2)),
-    ke: parseFloat(f.kineticEnergy.toFixed(2)),
+    vx: parseFloat(pxToMs(f.velocity.x).toFixed(3)),
+    vy: parseFloat(pxToMs(f.velocity.y).toFixed(3)),
+    speed: parseFloat(pxToMs(f.speed).toFixed(3)),
+    ax: parseFloat(pxToMs2(f.acceleration.x).toFixed(3)),
+    ay: parseFloat(pxToMs2(f.acceleration.y).toFixed(3)),
+    ke: parseFloat(keToSI(f.mass || 1, f.speed).toFixed(3)),
     px: parseFloat(f.position.x.toFixed(1)),
     py: parseFloat(f.position.y.toFixed(1)),
   }));
@@ -77,10 +78,10 @@ const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({
       {/* Live Values */}
       {latestFrame && (
         <div className="grid grid-cols-2 gap-2 p-4 border-b border-lab-border">
-          <MetricCard label="Speed" value={latestFrame.speed.toFixed(2)} unit="px/s" color="text-lab-accent" />
-          <MetricCard label="KE" value={latestFrame.kineticEnergy.toFixed(1)} unit="J" color="text-lab-success" />
-          <MetricCard label="Vel X" value={latestFrame.velocity.x.toFixed(2)} unit="px/s" color="text-lab-accent-light" />
-          <MetricCard label="Vel Y" value={latestFrame.velocity.y.toFixed(2)} unit="px/s" color="text-lab-warning" />
+          <MetricCard label="Speed" value={pxToMs(latestFrame.speed).toFixed(2)} unit="m/s" color="text-lab-accent" />
+          <MetricCard label="KE" value={keToSI(latestFrame.mass || 1, latestFrame.speed).toFixed(2)} unit="J" color="text-lab-success" />
+          <MetricCard label="Vel X" value={pxToMs(latestFrame.velocity.x).toFixed(2)} unit="m/s" color="text-lab-accent-light" />
+          <MetricCard label="Vel Y" value={pxToMs(latestFrame.velocity.y).toFixed(2)} unit="m/s" color="text-lab-warning" />
         </div>
       )}
 

@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLabStore } from '@/stores/useLabStore';
+import { pxToMs, msToPx } from '@/utils/units';
 import type { PhysicsEngine } from '@/services/physics';
 
 interface BodyPropertyEditorProps {
@@ -26,17 +27,18 @@ const BodyPropertyEditor: React.FC<BodyPropertyEditorProps> = ({ engineRef }) =>
     vx: '0', vy: '0', mass: '1', friction: '0.5', restitution: '0.3', angle: '0', isStatic: false,
   });
   const [bodyLabel, setBodyLabel] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Load body properties when selection changes
-  useEffect(() => {
+  // Re-read body properties whenever selection or refreshKey changes
+  const loadBodyProps = useCallback(() => {
     if (!selectedBodyId || !engineRef.current) return;
     const body = engineRef.current.getBody(selectedBodyId);
     if (!body) return;
 
     setBodyLabel(body.label || '');
     setProps({
-      vx: body.velocity.x.toFixed(2),
-      vy: body.velocity.y.toFixed(2),
+      vx: pxToMs(body.velocity.x).toFixed(2),
+      vy: pxToMs(body.velocity.y).toFixed(2),
       mass: body.mass.toFixed(2),
       friction: body.friction.toFixed(2),
       restitution: body.restitution.toFixed(2),
@@ -44,6 +46,10 @@ const BodyPropertyEditor: React.FC<BodyPropertyEditorProps> = ({ engineRef }) =>
       isStatic: body.isStatic,
     });
   }, [selectedBodyId, engineRef]);
+
+  useEffect(() => {
+    loadBodyProps();
+  }, [selectedBodyId, refreshKey, loadBodyProps]);
 
   const applyProperty = useCallback(
     (key: keyof BodyProps, value: string | boolean) => {
@@ -53,8 +59,9 @@ const BodyPropertyEditor: React.FC<BodyPropertyEditorProps> = ({ engineRef }) =>
       switch (key) {
         case 'vx':
         case 'vy': {
-          const vx = key === 'vx' ? parseFloat(value as string) || 0 : parseFloat(props.vx) || 0;
-          const vy = key === 'vy' ? parseFloat(value as string) || 0 : parseFloat(props.vy) || 0;
+          // User inputs m/s, convert to px/s for the engine
+          const vx = msToPx(key === 'vx' ? parseFloat(value as string) || 0 : parseFloat(props.vx) || 0);
+          const vy = msToPx(key === 'vy' ? parseFloat(value as string) || 0 : parseFloat(props.vy) || 0);
           engine.setBodyVelocity(selectedBodyId, { x: vx, y: vy });
           break;
         }
@@ -131,6 +138,13 @@ const BodyPropertyEditor: React.FC<BodyPropertyEditorProps> = ({ engineRef }) =>
           }`}
         >
           {trackedBodyId === selectedBodyId ? '📊 Tracking' : '📊 Track'}
+        </button>
+        <button
+          onClick={() => setRefreshKey((k) => k + 1)}
+          className="text-[10px] px-2 py-1 rounded font-medium bg-lab-surface text-lab-muted hover:text-lab-text transition-colors"
+          title="Refresh values from engine"
+        >
+          🔄
         </button>
       </div>
 
@@ -259,7 +273,8 @@ const BodyPropertyEditor: React.FC<BodyPropertyEditorProps> = ({ engineRef }) =>
             key={preset.label}
             onClick={() => {
               setProps((p) => ({ ...p, vx: String(preset.vx), vy: String(preset.vy) }));
-              engineRef.current?.setBodyVelocity(selectedBodyId, { x: preset.vx, y: preset.vy });
+              // Convert m/s presets to px/s for the engine
+              engineRef.current?.setBodyVelocity(selectedBodyId, { x: msToPx(preset.vx), y: msToPx(preset.vy) });
             }}
             className="text-[10px] px-2 py-1 rounded bg-lab-surface border border-lab-border text-lab-muted hover:text-lab-accent hover:border-lab-accent/30 transition-all font-mono"
           >
