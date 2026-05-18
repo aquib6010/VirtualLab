@@ -99,9 +99,9 @@ const PhysicsCanvas: React.FC<PhysicsCanvasProps> = ({
         }
       }
 
-      // Fallback: distance-based check for small bodies (within 25px)
+      // Fallback: distance-based check for bodies (within 50px for easier selection)
       let closestId: string | null = null;
-      let closestDist = 25;
+      let closestDist = 50;
       for (const [id, body] of userBodies) {
         const dx = body.position.x - x;
         const dy = body.position.y - y;

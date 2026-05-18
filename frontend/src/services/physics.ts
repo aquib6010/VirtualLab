@@ -171,15 +171,23 @@ export class PhysicsEngine {
     this.width = newWidth;
     this.height = newHeight;
 
-    // Update canvas buffer dimensions (NOT CSS — buffer must match layout)
-    this.canvas.width = newWidth * (window.devicePixelRatio || 1);
-    this.canvas.height = newHeight * (window.devicePixelRatio || 1);
+    const pixelRatio = this.render.options.pixelRatio || 1;
 
-    // Update Matter.js render options
+    // Update render options (logical dimensions)
     this.render.options.width = newWidth;
     this.render.options.height = newHeight;
-    this.render.canvas.width = this.canvas.width;
-    this.render.canvas.height = this.canvas.height;
+
+    // Update the canvas buffer — Matter.js Render uses pixelRatio internally
+    this.render.canvas.width = newWidth * pixelRatio;
+    this.render.canvas.height = newHeight * pixelRatio;
+    this.canvas.width = this.render.canvas.width;
+    this.canvas.height = this.render.canvas.height;
+
+    // Update render bounds to match new dimensions
+    this.render.bounds = {
+      min: { x: 0, y: 0 },
+      max: { x: newWidth, y: newHeight },
+    };
 
     // Remove old boundaries and add new ones
     const world = this.engine.world;
@@ -189,10 +197,10 @@ export class PhysicsEngine {
     Matter.Composite.remove(world, oldBounds);
     this.addBoundaries();
 
-    // Re-sync mouse with new canvas size
+    // Re-sync mouse pixel ratio so click coordinates match world coordinates
     if (this.mouse) {
       Matter.Mouse.setOffset(this.mouse, { x: 0, y: 0 });
-      (this.mouse as any).pixelRatio = window.devicePixelRatio || 1;
+      (this.mouse as any).pixelRatio = pixelRatio;
     }
   }
 
