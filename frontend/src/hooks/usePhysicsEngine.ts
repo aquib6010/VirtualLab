@@ -41,13 +41,21 @@ export function usePhysicsEngine(
     const engine = new PhysicsEngine(container, options);
     engineRef.current = engine;
 
-    // Ensure the Matter.js canvas fills the container
-    const canvas = engine.getCanvas();
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
+    // Use ResizeObserver to keep canvas buffer in sync with CSS layout
+    // This prevents the coordinate mismatch in production builds where
+    // the layout settles after initial JS execution
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0 && engineRef.current) {
+          engineRef.current.resize(width, height);
+        }
+      }
+    });
+    resizeObserver.observe(container);
 
     return () => {
+      resizeObserver.disconnect();
       engine.destroy();
       engineRef.current = null;
     };

@@ -165,6 +165,37 @@ export class PhysicsEngine {
     Matter.Composite.add(this.engine.world, [ground, leftWall, rightWall]);
   }
 
+  // ─── Resize ────────────────────────────────────────────────────
+  resize(newWidth: number, newHeight: number): void {
+    if (newWidth <= 0 || newHeight <= 0) return;
+    this.width = newWidth;
+    this.height = newHeight;
+
+    // Update canvas buffer dimensions (NOT CSS — buffer must match layout)
+    this.canvas.width = newWidth * (window.devicePixelRatio || 1);
+    this.canvas.height = newHeight * (window.devicePixelRatio || 1);
+
+    // Update Matter.js render options
+    this.render.options.width = newWidth;
+    this.render.options.height = newHeight;
+    this.render.canvas.width = this.canvas.width;
+    this.render.canvas.height = this.canvas.height;
+
+    // Remove old boundaries and add new ones
+    const world = this.engine.world;
+    const oldBounds = Matter.Composite.allBodies(world).filter(
+      (b) => b.label === 'ground' || b.label === 'wall-left' || b.label === 'wall-right'
+    );
+    Matter.Composite.remove(world, oldBounds);
+    this.addBoundaries();
+
+    // Re-sync mouse with new canvas size
+    if (this.mouse) {
+      Matter.Mouse.setOffset(this.mouse, { x: 0, y: 0 });
+      (this.mouse as any).pixelRatio = window.devicePixelRatio || 1;
+    }
+  }
+
   // ─── Body CRUD ─────────────────────────────────────────────────
   addBody(
     type: BodyType,
