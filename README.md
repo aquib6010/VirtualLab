@@ -91,7 +91,11 @@ npm install
 Create the environment file:
 
 ```bash
+# Mac/Linux:
 cp .env.example .env
+
+# Windows CMD:
+copy .env.example .env
 ```
 
 Edit `backend/.env` with your values:
@@ -116,7 +120,11 @@ npm install
 Create the environment file:
 
 ```bash
+# Mac/Linux:
 cp .env.example .env
+
+# Windows CMD:
+copy .env.example .env
 ```
 
 Edit `frontend/.env`:
