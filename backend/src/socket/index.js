@@ -10,11 +10,11 @@ function setupSocket(httpServer) {
     cors: {
       origin: (origin, callback) => {
         const allowed = [
-          'http://localhost:5173',
-          'http://localhost:3000',
+          /^http:\/\/localhost:\d+$/,   // Any localhost port (dev)
           /\.vercel\.app$/,
+          /\.railway\.app$/,
         ];
-        if (!origin || allowed.some(o => typeof o === 'string' ? o === origin : o.test(origin))) {
+        if (!origin || allowed.some(o => o.test(origin))) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));

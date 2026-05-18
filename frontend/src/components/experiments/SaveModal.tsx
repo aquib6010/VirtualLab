@@ -42,14 +42,14 @@ const SaveModal: React.FC<SaveModalProps> = ({
       if (existingExperimentId) {
         // Update existing
         response = await experimentsAPI.update(existingExperimentId, {
-          name,
+          title: name,
           description,
           worldState,
         });
       } else {
         // Create new
         response = await experimentsAPI.create({
-          name,
+          title: name,
           description,
           worldState,
         });
